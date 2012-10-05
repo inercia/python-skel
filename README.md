@@ -14,6 +14,15 @@ Characteristics
   the top directory...
 - automatic Sphinx documentation: type `make docs` or `make docs-pdf` on the
   project root directory
+- optional `redis` build and installation (inside the virtualenv)
+
+Usage
+=====
+
+- search for all the occurrences of XXXX and replace them by your project name
+- customize anything you want on the `buildout*` scripts
+- add all your requierements in the `reqs.*` files
+- add your code in the `sources` directory
 
 
 
