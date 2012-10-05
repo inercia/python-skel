@@ -8,12 +8,15 @@ If you want deeper details, you should build the documentation...
 Characteristics
 ===============
 
-- automatic requirements installation: type `make`
+- automatic virtualenv management and requirements installation (type `make`)
+- project cleanup and 
 - complete RPM packaging of the virtualenv, including the Python interpreter and
-  all the installed libs: just type `make rpm`, and a nice rpm will appear the
-  the top directory...
-- automatic Sphinx documentation: type `make docs` or `make docs-pdf` on the
-  project root directory
+  all the installed libs (just type `make rpm`, and a nice rpm will appear the
+  the top directory)
+- automatic Sphinx documentation (type `make docs` or `make docs-pdf` on the
+  project root directory)
+- basic `fabric` file, based on a config file, for doing things like deploying
+  RPMs, starting/stopping services, cleaning up logs on the remote machines, etc.
 - optional `redis` build and installation (inside the virtualenv)
 
 Usage
