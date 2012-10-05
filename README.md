@@ -8,7 +8,9 @@ Characteristics
 
 - automatic virtualenv management and requirements installation (type `make`)
 - separate development and production configurations. When you type `make`, we
-  will use the development settings, but a `make rpm` will use the settingss for
+  will use the development build process (`buildout.devel.cfg`) and
+  settings (`reqs.cfg` and `reqs.devel.cfg`), but a `make rpm` will use the
+  build (`buildout.deploy.cfg`) and settings (just `reqs.cfg`) for
   deployment on production machines.
 - project cleanup (type `make distclean`)
 - automatic Sphinx documentation (type `make docs` or `make docs-pdf` on the
@@ -27,11 +29,11 @@ Characteristics
 Usage
 =====
 
-- search for all the occurrences of XXXX and replace them by your project name
-- search for all the XXXX* files and rename them accordingly
-- customize anything you want on the `buildout*` scripts
-- add all your requierements in the `reqs.*` files
-- add your code in the `sources` directory
+# search for all the occurrences of XXXX and replace them by your project name
+# search for all the XXXX* files and rename them accordingly
+# customize anything you want on the `buildout*` scripts
+# add all your requierements in the `reqs.*` files
+# add your code in the `sources` directory
 
 
 FAQ
