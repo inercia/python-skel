@@ -205,9 +205,9 @@ def XXXX_update_config():
 @roles('integration', 'deployment')
 def XXXX_tail_log():
     """
-    Prints the tail of PREFIX/logs/XXXX_cc.log
+    Prints the tail of PREFIX/logs/XXXX.log
     """
-    f = os.path.join(env.admin.prefix, 'logs', 'XXXX_cc.log')
+    f = os.path.join(env.admin.prefix, 'logs', 'XXXX.log')
     print(green('%s at %s' % (f, env.host_string)))
     with settings(warn_only = True):
         run('[ -f {f} ] && tail {f} || echo "file not found"'.format(f = f))
