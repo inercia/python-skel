@@ -1,0 +1,252 @@
+
+# RPM spec
+
+
+%define name        ${presets:pkg-name}
+%define desc_name   ${presets:pkg-desc-name}
+%define version     %(cat VERSION)
+%define release     %(cat RELEASE)
+%define prefix      /opt/${presets:pkg-name}
+
+%global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
+
+
+Summary:       XXXX
+Name:          %{name}
+Version:       %{version}
+Release:       %{release}
+License:       BSD
+Group:         Applications/Networking
+URL:           http://www.XXXX.com/
+Vendor:        unknown
+Packager:      unknown
+
+Prefix:        %{prefix}
+Source:        $RPM_SOURCE_DIR/pkg.tar
+Provides:      %{name}
+
+#Requires:      zeromq
+
+
+####################################################################################################
+%description
+
+XXXX software distribution
+
+####################################################################################################
+%prep
+
+echo ">>> Preparing the build..."
+echo ">>>   RPM_BUILD_DIR = $RPM_BUILD_DIR"
+[ "$RPM_BUILD_DIR" != ""  ] || { echo "ERROR: RPM_BUILD_DIR is empty" ; exit 1 ; }
+[ -d $RPM_BUILD_DIR       ] || { echo "ERROR: $RPM_BUILD_DIR not found" ; exit 1 ; }
+[ "$RPM_SOURCE_DIR" != "" ] || { echo "ERROR: RPM_SOURCE_DIR is empty" ; exit 1 ; }
+[ -d $RPM_SOURCE_DIR      ] || { echo "ERROR: $RPM_SOURCE_DIR not found" ; exit 1 ; }
+
+rm -rf $RPM_BUILD_DIR/%{name}-*
+rm -rf $RPM_BUILD_DIR/../RPMS/*/%{name}*.rpm
+cat $RPM_SOURCE_DIR/pkg.tar | tar -xpf -
+
+####################################################################################################
+%build
+
+
+if [ "$RPM_BUILD_ROOT" = "" ] ; then
+    RPM_BUILD_ROOT=$RPM_BUILD_DIR/../BUILDROOT
+    echo ">>> Creating build root on $RPM_BUILD_ROOT..."
+    [ -d $RPM_BUILD_ROOT ] || mkdir -p $RPM_BUILD_ROOT
+else
+    echo ">>> Building on $RPM_BUILD_ROOT..."
+fi
+
+[ "$RPM_BUILD_ROOT" != ""  ] || { echo "ERROR: RPM_BUILD_ROOT is empty" ; exit 1 ; }
+rm -rf $RPM_BUILD_ROOT/*
+
+[ -d $RPM_BUILD_ROOT ]           || mkdir -p $RPM_BUILD_ROOT
+[ -d $RPM_BUILD_ROOT/%{prefix} ] || mkdir -p $RPM_BUILD_ROOT/%{prefix}
+
+RPM_BUILD_TARGET=$RPM_BUILD_ROOT/%{prefix}
+
+echo ">>> Moving everything to $RPM_BUILD_TARGET..."
+mv -f $RPM_BUILD_DIR/*        $RPM_BUILD_TARGET
+
+echo ">>> Removing some files we don't need in the RPM..."
+
+REGS="${rpm-spec:cleanup-files}"
+REGS_S=`echo $REGS | sed -e 's/\n/\ /g'`
+for i in $REGS_S ; do rm -rf $RPM_BUILD_TARGET/$i ; done
+
+REGS="${rpm-spec:cleanup-packages}"
+REGS_S=`echo $REGS | sed -e 's/\n/\ /g'`
+for i in $REGS_S ; do $RPM_BUILD_TARGET/bin/pip uninstall -q -y $i || true ; done
+
+## note: pip does not work here (I don't know why) - use easy_install!
+echo ">>> Installing our software as a package..."
+cd $RPM_BUILD_TARGET && $RPM_BUILD_TARGET/bin/easy_install -v -O2 -Z $RPM_SOURCE_DIR/sources
+
+rm -f $RPM_BUILD_TARGET/VERSION $RPM_BUILD_TARGET/RELEASE
+
+####################################################################################################
+%clean
+
+echo ">>> Copying RPM to $RPM_SOURCE_DIR..."
+cp -f $RPM_BUILD_DIR/../RPMS/*/%{name}*.rpm    $RPM_SOURCE_DIR/
+rm -rf $RPM_BUILD_ROOT/*
+
+####################################################################################################
+%files
+
+# documentation
+%doc                    %{prefix}/README.md
+%docdir                 %{prefix}/share/doc
+%{prefix}/share/doc
+
+%defattr(-,${presets:system-user-name},${presets:system-user-name})
+
+# config files
+%attr(0755,${presets:system-user-name},${presets:system-user-name})   %{prefix}/conf/init.d/*
+%config(noreplace)                                                    %{prefix}/conf/*
+
+%defattr(-,${presets:system-user-name},${presets:system-user-name})
+
+# other
+%attr(0755,${presets:system-user-name},${presets:system-user-name})   %{prefix}/bin/*
+%attr(0755,${presets:system-user-name},${presets:system-user-name})   %{prefix}/lib/*
+%attr(0755,${presets:system-user-name},${presets:system-user-name})   %{prefix}/var/*
+
+
+####################################################################################################
+%preun
+# anything to do before uninstalling
+
+PREFIX=%{prefix}
+NAME="XXXX"
+
+if [ "$1" = "1" ] ; then
+    # Start the uninstallation of the old software when upgrading
+    echo
+elif [ "$1" = "0" ] ; then
+    # The software is really being uninstalled, no upgrade
+    echo ">>> Stopping and removing old service..."
+    if [ -f /etc/init.d/$NAME ] ; then
+        /etc/init.d/$NAME stop
+
+        sleep 5
+
+        echo ">>> Removing $NAME service..."
+        /sbin/chkconfig --del $NAME
+        rm -f /etc/init.d/$NAME
+    fi
+fi
+
+
+####################################################################################################
+%postun
+# anything to do after uninstalling
+
+PREFIX=%{prefix}
+
+if [ "$1" = "1" ] ; then
+    # Finishes the uninstallation of the old software when upgrading    
+    echo
+elif [ "$1" = "0" ] ; then
+    # The software is really going to be uninstalled, no upgrade
+
+    if [ -f /etc/ld.so.conf.d/XXXX.conf ] ; then
+        echo -n ">>> Removing ld.so configuration..."
+        rm -f /etc/ld.so.conf.d/XXXX.conf
+        /sbin/ldconfig
+    fi
+fi
+
+####################################################################################################
+%pre 
+# anything to do before installing/upgrading
+
+PREFIX=%{prefix}
+
+if [ "$1" = "1" ] ; then
+    # Perform tasks to prepare for the initial installation
+    echo
+elif [ "$1" = "2" ] ; then
+    # Perform whatever maintenance must occur before the upgrade begins
+    echo
+fi
+
+####################################################################################################
+%post
+
+DESC_NAME=%{desc_name}
+PREFIX=%{prefix}
+NAME="XXXX"
+SYS_USER_NAME=${presets:system-user-name}
+SYS_USER_PASS=${presets:system-user-pass}
+
+LOCAL_PYTHON=$PREFIX/bin/python
+
+
+for FILE in $PREFIX/bin/XXXX-* ; do
+    if [ -x $FILE ] ; then
+        echo ">>> Fixing path in $FILE script..."
+    
+        rm -f $FILE.new
+        echo "#! $LOCAL_PYTHON"       >    $FILE.new 
+        tail -n +2  $FILE            >>    $FILE.new
+        mv -f $FILE.new $FILE
+    
+        chmod 755 $FILE
+    fi
+done
+
+if [ -d /etc/ld.so.conf.d ] ; then
+    echo ">>> Adding ld.so configuration..."
+    echo "$PREFIX/lib" > /etc/ld.so.conf.d/XXXX.conf
+    /sbin/ldconfig 
+fi
+
+echo ">>> Checking user \"$SYS_USER_NAME\" exists..."
+id $SYS_USER_NAME >/dev/null 2>/dev/null
+if [ $? -eq 1 ] ; then
+    echo ">>> ... creating user"
+    /usr/sbin/adduser --home $PREFIX     $SYS_USER_NAME
+
+    echo ">>> ... setting password"
+    echo "$SYS_USER_NAME:$SYS_USER_PASS"  |  /usr/sbin/chpasswd
+fi
+
+echo ">>> Linking $NAME startup script: $PREFIX/conf/init.d/$NAME.rc..."
+if [ -x $PREFIX/conf/init.d/$NAME.rc ] ; then
+    rm -f /etc/init.d/$NAME    
+    cd /etc/init.d/ && ln -sf $PREFIX/conf/init.d/$NAME.rc  $NAME
+    
+    echo ">>> Adding $NAME service..."
+    /sbin/chkconfig --add $NAME
+    /sbin/chkconfig $NAME on
+
+    sleep 2  
+fi
+echo ">>> ... done!"
+echo
+
+
+if [ "$1" = "1" ] ; then
+    # Perform tasks to prepare for the initial installation
+    touch $PREFIX/.first_install
+
+    echo ">>> $NAME has been installed. Now you must:"
+    echo ">>>  1. configure the services you want to run in $PREFIX/conf/XXXX.conf"
+    echo ">>>  2. start the services with: /etc/init.d/XXXX start"
+    echo
+
+elif [ "$1" = "2" ] ; then
+	# Perform whatever maintenance must occur before the upgrade begins
+
+    echo
+    echo ">>> $NAME has been upgraded. Now you must:"
+    echo ">>>  1. check $PREFIX/conf/XXXX.conf (and maybe a new $PREFIX/conf/XXXX.conf.rpmnew)"
+    echo ">>>  2. re-start the services with: /etc/init.d/$NAME restart"
+    echo
+fi
+
+
+
