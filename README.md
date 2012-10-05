@@ -34,4 +34,13 @@ Usage
 - add your code in the `sources` directory
 
 
+FAQ
+===
+
+Can I change the Python version?
+--------------------------------
+
+Set a different version on the Makefile with the `SYS_PYTHON` variable
+
+
 
