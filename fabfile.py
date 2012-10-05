@@ -24,7 +24,8 @@ if __name__ == '__main__':
     import subprocess
 
     if not os.path.exists(FABRIC):
-        print 'fabric not found'
+        print 'ERROR: fabric not found!'
+        print 'ERROR: make sure you have build XXXX before trying to run this script...'
         sys.exit(1)
 
     if len(sys.argv) > 1:
