@@ -1,9 +1,7 @@
 Overview
 ========
 
-This is just a quick start guide, describing the main things you can do with this code.
-If you want deeper details, you should build the documentation...
-
+A Python project template
 
 Characteristics
 ===============
