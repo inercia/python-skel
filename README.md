@@ -9,14 +9,15 @@ Characteristics
 ===============
 
 - automatic virtualenv management and requirements installation (type `make`)
-- project cleanup and 
+- project cleanup (type `make distclean`)
+- automatic Sphinx documentation (type `make docs` or `make docs-pdf` on the
+  project root directory)
 - complete RPM packaging of the virtualenv, including the Python interpreter and
   all the installed libs (just type `make rpm`, and a nice rpm will appear the
   the top directory)
-- automatic Sphinx documentation (type `make docs` or `make docs-pdf` on the
-  project root directory)
-- basic `fabric` file, based on a config file, for doing things like deploying
-  RPMs, starting/stopping services, cleaning up logs on the remote machines, etc.
+- basic `fabric` file, based on a config file (`fabfile.cfg`), for doing things
+  like deploying RPMs, starting/stopping services, cleaning up logs on the
+  remote machines, etc.
 - optional `redis` build and installation (inside the virtualenv)
 
 Usage
