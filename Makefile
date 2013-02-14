@@ -10,13 +10,11 @@ LOCAL_PYTHON=$(TOP)/bin/python
 
 # virtualenv arguments
 VENV_EXE=$(TOP)/buildout/virtualenv.py
-VENV_ENV=VIRTUALENV_USE_SETUPTOOLS=1
-VENV_ARGS=--no-site-packages --unzip-setuptools --python=$(SYS_PYTHON)
+VENV_ARGS=--no-site-packages --use-distribute --python=$(SYS_PYTHON)
 
 # Buildout
 BUILDOUT=$(TOP)/bin/buildout
-BUILDOUT_ARGS=-s -t 30
-BUILDOUT_ENV=VIRTUALENV_USE_SETUPTOOLS=1
+BUILDOUT_ARGS=-t 120
 
 # the boostrap file
 BOOTSTRAP_PY_URL=http://svn.zope.org/*checkout*/zc.buildout/trunk/bootstrap/bootstrap.py
@@ -74,19 +72,19 @@ all: devel
 
 $(LOCAL_PYTHON):
 	@echo ">>> Creating virtuelenv..."
-	$(VENV_ENV) $(VENV_EXE) $(VENV_ARGS)   $(VENV)   2>/dev/null
+	$(VENV_EXE) $(VENV_ARGS)   $(VENV)   2>/dev/null
 	@echo ">>> virtuelenv created!"
 
 $(BUILDOUT): $(LOCAL_PYTHON) $(BOOTSTRAP_FILE)
 	@echo ">>> Bootstraping..."
 	@[ -d downloads ] || mkdir downloads
-	$(BUILDOUT_ENV) $(LOCAL_PYTHON) $(BOOTSTRAP_FILE) $(BOOTSTRAP_ARGS)
+	$(LOCAL_PYTHON) $(BOOTSTRAP_FILE) $(BOOTSTRAP_ARGS)
 	@rm -rf  $(VENV)/pip-*
 	@echo ">>> Bootstrapping SUCCESSFUL!"
 
 00-common:
 	@echo ">>> Running buildout for DEVELOPMENT..."
-	PATH=$(VENV)/bin:$$PATH  $(BUILDOUT_ENV) $(LOCAL_PYTHON) $(BUILDOUT) \
+	PATH=$(VENV)/bin:$$PATH $(LOCAL_PYTHON) $(BUILDOUT) \
 		-N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEV_CONF)
 	@echo ">>> Checking dirs..."
 	@for i in $(RUN_DIRS) ; do mkdir -p $$i ; done
@@ -99,7 +97,7 @@ XXXX: $(BUILDOUT) 00-common
 
 00-deploy:
 	@echo ">>> Running buildout for DEPLOYMENT..."
-	PATH=$(VENV)/bin:$$PATH  $(BUILDOUT_ENV) $(LOCAL_PYTHON) $(BUILDOUT) \
+	PATH=$(VENV)/bin:$$PATH  $(LOCAL_PYTHON) $(BUILDOUT) \
 		-N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEPLOY_CONF)
 	@echo ">>> Build SUCCESSFUL !!"
 
@@ -112,22 +110,20 @@ deploy-fast:                   00-deploy
 
 devel: $(BUILDOUT)
 	@echo ">>> Running buildout for DEVELOPMENT..."
-	PATH=$(VENV)/bin:$$PATH  $(BUILDOUT_ENV) $(LOCAL_PYTHON) $(BUILDOUT) \
+	PATH=$(VENV)/bin:$$PATH $(LOCAL_PYTHON) $(BUILDOUT) \
 		-N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEV_CONF)
 	@echo ">>> Checking dirs..."
 	@for i in $(RUN_DIRS) ; do mkdir -p $$i ; done
-	@rm -rf $(POST_BUILD_CLEANUPS)
-	@rm -rf  $(VENV)/pip-*
+	@rm -rf $(POST_BUILD_CLEANUPS) $(VENV)/pip-*
 	@echo
 	@echo ">>> Build SUCCESSFUL !!"
 	@echo ">>> You can now 'make docs', 'make coverage'..."
 
 fast: $(BUILDOUT)
 	@echo ">>> Running FAST buildout. I hope we have all dependencies installed..."
-	PATH=$(VENV)/bin:$$PATH  $(BUILDOUT_ENV) $(LOCAL_PYTHON) $(BUILDOUT) \
+	PATH=$(VENV)/bin:$$PATH  $(LOCAL_PYTHON) $(BUILDOUT) \
 	    -N $(BUILDOUT_ARGS) -o  -c $(BUILDOUT_DEV_CONF)
-	@rm -rf $(POST_BUILD_CLEANUPS)
-	@rm -rf  $(VENV)/pip-*
+	@rm -rf $(POST_BUILD_CLEANUPS) $(VENV)/pip-*
 	@echo ">>> Fast-build SUCCESSFUL !!"
 	@echo ">>> You can now 'make docs', 'make coverage'..."
 
@@ -169,7 +165,7 @@ clean: clean-pyc
 	rm -rf    $(VENV)/.Python
 	rm -rf    $(RPM_TAR)
 	@echo ">>> Recreating virtuelenv..."
-	$(VENV_ENV) $(VENV_EXE) --clear $(VENV_ARGS)  $(VENV)
+	$(VENV_EXE) --clear $(VENV_ARGS)  $(VENV)
 	@echo ">>> Fixing some virtualenv stuff for Ubuntu..."
 	@rm -rf $(VENV)/local
 	@mkdir $(VENV)/local
@@ -194,11 +190,10 @@ run-cleanup:
 
 00-rpm:
 	@echo ">>> Making binaries relocatable..."
-	$(VENV_ENV) $(VENV_EXE) --relocatable $(VENV_ARGS) $(VENV)
+	$(VENV_EXE) --relocatable $(VENV_ARGS) $(VENV)
 	@echo
 	@echo ">>> Packaging..."
-	cd $(TOP) && $(TOP)/buildout/packaging/package.sh --prefix `pwd` \
-	                --spec `pwd`/buildout/packaging/rpm.spec
+	PATH=$(VENV)/bin:$$PATH $(LOCAL_PYTHON) $(BUILDOUT) -N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEPLOY_CONF) install rpm
 	@echo ">>> Packaging SUCCESSFUL !!"
 
 .PHONY: rpm
