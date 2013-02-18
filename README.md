@@ -3,7 +3,7 @@ Overview
 
 A Python project template
 
-[![Build Status](https://travis-ci.org/inercia/python-skel.png)](https://travis-ci.org/inercia/python-skel)
+[![Build Status](https://travis-ci.org/inercia/python-skel.png?branch=master)](https://travis-ci.org/inercia/python-skel)
 
 Characteristics
 ===============
