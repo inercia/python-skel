@@ -1,16 +1,8 @@
 
 TOP=.
-VENV=$(TOP)
 
 # the system python we will use for bootstrapping
 SYS_PYTHON=python2.7
-
-# the local python we'll have after running virtualenv
-LOCAL_PYTHON=$(TOP)/bin/python
-
-# virtualenv arguments
-VENV_EXE=$(TOP)/buildout/virtualenv.py
-VENV_ARGS=--no-site-packages --use-distribute --python=$(SYS_PYTHON)
 
 # Buildout
 BUILDOUT=$(TOP)/bin/buildout
@@ -70,26 +62,18 @@ BUILDOUT_DEPLOY_CONF=$(TOP)/buildout.deploy.cfg
 all: devel
 
 
-$(LOCAL_PYTHON):
-	@echo ">>> Creating virtuelenv..."
-	$(VENV_EXE) $(VENV_ARGS)   $(VENV)   2>/dev/null
-	@echo ">>> virtuelenv created!"
-
-$(BUILDOUT): $(LOCAL_PYTHON) $(BOOTSTRAP_FILE)
+$(BUILDOUT): $(BOOTSTRAP_FILE)
 	@echo ">>> Bootstraping..."
 	@[ -d downloads ] || mkdir downloads
-	$(LOCAL_PYTHON) $(BOOTSTRAP_FILE) $(BOOTSTRAP_ARGS)
-	@rm -rf  $(VENV)/pip-*
+	$(SYS_PYTHON) $(BOOTSTRAP_FILE) $(BOOTSTRAP_ARGS)
 	@echo ">>> Bootstrapping SUCCESSFUL!"
 
 00-common:
 	@echo ">>> Running buildout for DEVELOPMENT..."
-	PATH=$(VENV)/bin:$$PATH $(LOCAL_PYTHON) $(BUILDOUT) \
-		-N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEV_CONF)
+	PATH=$(TOP)/bin:$$PATH $(BUILDOUT) -N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEV_CONF)
 	@echo ">>> Checking dirs..."
 	@for i in $(RUN_DIRS) ; do mkdir -p $$i ; done
 	@rm -rf $(POST_BUILD_CLEANUPS)
-	@rm -rf  $(VENV)/pip-*
 	@echo
 
 
@@ -97,8 +81,7 @@ XXXX: $(BUILDOUT) 00-common
 
 00-deploy:
 	@echo ">>> Running buildout for DEPLOYMENT..."
-	PATH=$(VENV)/bin:$$PATH  $(LOCAL_PYTHON) $(BUILDOUT) \
-		-N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEPLOY_CONF)
+	PATH=$(TOP)/bin:$$PATH  $(SYS_PYTHON) $(BUILDOUT) -N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEPLOY_CONF)
 	@echo ">>> Build SUCCESSFUL !!"
 
 .PHONY: XXXX-deploy
@@ -110,20 +93,18 @@ deploy-fast:                   00-deploy
 
 devel: $(BUILDOUT)
 	@echo ">>> Running buildout for DEVELOPMENT..."
-	PATH=$(VENV)/bin:$$PATH $(LOCAL_PYTHON) $(BUILDOUT) \
-		-N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEV_CONF)
+	PATH=$(TOP)/bin:$$PATH $(BUILDOUT) -N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEV_CONF)
 	@echo ">>> Checking dirs..."
 	@for i in $(RUN_DIRS) ; do mkdir -p $$i ; done
-	@rm -rf $(POST_BUILD_CLEANUPS) $(VENV)/pip-*
+	@rm -rf $(POST_BUILD_CLEANUPS) $(TOP)/pip-*
 	@echo
 	@echo ">>> Build SUCCESSFUL !!"
 	@echo ">>> You can now 'make docs', 'make coverage'..."
 
 fast: $(BUILDOUT)
 	@echo ">>> Running FAST buildout. I hope we have all dependencies installed..."
-	PATH=$(VENV)/bin:$$PATH  $(LOCAL_PYTHON) $(BUILDOUT) \
-	    -N $(BUILDOUT_ARGS) -o  -c $(BUILDOUT_DEV_CONF)
-	@rm -rf $(POST_BUILD_CLEANUPS) $(VENV)/pip-*
+	PATH=$(TOP)/bin:$$PATH $(BUILDOUT) -N $(BUILDOUT_ARGS) -o  -c $(BUILDOUT_DEV_CONF)
+	@rm -rf $(POST_BUILD_CLEANUPS) $(TOP)/pip-*
 	@echo ">>> Fast-build SUCCESSFUL !!"
 	@echo ">>> You can now 'make docs', 'make coverage'..."
 
@@ -144,33 +125,26 @@ clean-pyc:
 	rm -f     `find $(SOURCES_DIR) -name '*.pyo'`
 
 clean-dcache:
-	rm -rf    $(VENV)/downloads
+	rm -rf    $(TOP)/downloads
 
 clean: clean-pyc
 	@echo ">>> Cleaning stuff..."
-	rm -rf    $(VENV)/bin $(VENV)/doc $(VENV)/dist
-	rm -rf    $(VENV)/conf/*.conf  $(VENV)/conf/*/*.conf
-	rm -rf    $(VENV)/*.spec $(VENV)/buildout/packaging/*.spec
-	rm -rf    $(VENV)/develop-eggs $(VENV)/eggs $(VENV)/html
-	rm -rf    $(VENV)/include $(VENV)/man $(VENV)/local $(VENV)/lib $(VENV)/logs $(VENV)/parts
-	rm -rf    $(VENV)/run $(VENV)/share $(VENV)/sbin
-	rm -rf    $(VENV)/doc $(VENV)/docs/coverage/*
-	rm -rf    $(VENV)/build $(VENV)/local $(VENV)/temp $(VENV)/*_temp $(VENV)/*~  $(VENV)/pip-*
-	rm -rf    $(VENV)/*.egg-info  $(VENV)/*/*.egg-info   $(VENV)/nosetests.xml
-	rm -rf    $(VENV)/*__tmp  $(VENV)/*log.txt  $(VENV)/test.py*  $(VENV)/*.log  $(VENV)/log
-	rm -rf    $(VENV)/.installed.cfg $(VENV)/depends-log.txt
-	rm -rf    $(VENV)/*packages-log.txt $(VENV)/profile.* $(VENV)/*.log
-	rm -rf    $(VENV)/nosetests.xml  $(VENV)/nosetests.log
-	rm -rf    $(VENV)/*.rpm $(VENV)/*.deb $(VENV)/*.tgz $(VENV)/*.pdf $(VENV)/*.dump
-	rm -rf    $(VENV)/.Python
+	rm -rf    $(TOP)/bin $(TOP)/doc $(TOP)/dist
+	rm -rf    $(TOP)/conf/*.conf  $(TOP)/conf/*/*.conf
+	rm -rf    $(TOP)/*.spec $(TOP)/buildout/packaging/*.spec
+	rm -rf    $(TOP)/develop-eggs $(TOP)/eggs $(TOP)/html
+	rm -rf    $(TOP)/include $(TOP)/man $(TOP)/local $(TOP)/lib $(TOP)/logs $(TOP)/parts
+	rm -rf    $(TOP)/run $(TOP)/share $(TOP)/sbin
+	rm -rf    $(TOP)/doc $(TOP)/docs/coverage/*
+	rm -rf    $(TOP)/build $(TOP)/local $(TOP)/temp $(TOP)/*_temp $(TOP)/*~  $(TOP)/pip-*
+	rm -rf    $(TOP)/*.egg-info  $(TOP)/*/*.egg-info   $(TOP)/nosetests.xml
+	rm -rf    $(TOP)/*__tmp  $(TOP)/*log.txt  $(TOP)/test.py*  $(TOP)/*.log  $(TOP)/log
+	rm -rf    $(TOP)/.installed.cfg $(TOP)/depends-log.txt
+	rm -rf    $(TOP)/*packages-log.txt $(TOP)/profile.* $(TOP)/*.log
+	rm -rf    $(TOP)/nosetests.xml  $(TOP)/nosetests.log
+	rm -rf    $(TOP)/*.rpm $(TOP)/*.deb $(TOP)/*.tgz $(TOP)/*.pdf $(TOP)/*.dump
+	rm -rf    $(TOP)/.Python
 	rm -rf    $(RPM_TAR)
-	@echo ">>> Recreating virtuelenv..."
-	$(VENV_EXE) --clear $(VENV_ARGS)  $(VENV)
-	@echo ">>> Fixing some virtualenv stuff for Ubuntu..."
-	@rm -rf $(VENV)/local
-	@mkdir $(VENV)/local
-	@cd $(VENV)/local && ln -s ../lib 
-	@echo ">>> Virtual environment recreated."
 	@echo ">>> Everything bright and clean!!"
 	@echo ">>> You can now 'make'..."
 
@@ -189,11 +163,8 @@ run-cleanup:
 # packaging
 
 00-rpm:
-	@echo ">>> Making binaries relocatable..."
-	$(VENV_EXE) --relocatable $(VENV_ARGS) $(VENV)
-	@echo
 	@echo ">>> Packaging..."
-	PATH=$(VENV)/bin:$$PATH $(LOCAL_PYTHON) $(BUILDOUT) -N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEPLOY_CONF) install rpm
+	PATH=$(TOP)/bin:$$PATH $(BUILDOUT) -N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEPLOY_CONF) install rpm
 	@echo ">>> Packaging SUCCESSFUL !!"
 
 .PHONY: rpm
@@ -208,8 +179,8 @@ rpm-clean: distclean rpm
 run: run-cleanup
 	@echo ">>> Running the XXXX CC..."
 	@PYTHONPATH=$(SOURCES_DIR):$$PYTHONPATH \
-		LD_LIBRARY_PATH=$(VENV)/lib:$$LD_LIBRARY_PATH       \
-		DYLD_LIBRARY_PATH=$(VENV)/lib:$$DYLD_LIBRARY_PATH   \
+		LD_LIBRARY_PATH=$(TOP)/lib:$$LD_LIBRARY_PATH       \
+		DYLD_LIBRARY_PATH=$(TOP)/lib:$$DYLD_LIBRARY_PATH   \
 		$(YARN_CC) --config=$(TOP)/conf/XXXX.conf
 
 ####################################################################################################
@@ -221,7 +192,7 @@ clean-docs:
 	@echo ">>> Cleaning docs..."
 	rm -rf    $(API_DOCS_OUTPUT_DIR)
 
-$(VENV)/bin/sphinx-build: $(BUILDOUT)
+$(TOP)/bin/sphinx-build: $(BUILDOUT)
 	@echo ">>> Creating docs builder..."
 	@[ -d $(API_DOCS_OUTPUT_DIR) ] || mkdir -p $(API_DOCS_OUTPUT_DIR)
 
@@ -236,15 +207,15 @@ docs-api:
 00-docs-run: docs-api
 	@echo ">>> Creating development docs..."
 	@PYTHONPATH=$(SOURCES_DIR):$$PYTHONPATH \
-	    YARN_PREFIX=$(VENV) \
+	    YARN_PREFIX=$(TOP) \
 	    YARN_CONF=$(TOP)/conf/XXXX.conf \
-	    LD_LIBRARY_PATH=$(VENV)/lib:$$LD_LIBRARY_PATH   \
-	    DYLD_LIBRARY_PATH=$(VENV)/lib:$$DYLD_LIBRARY_PATH   \
-		    $(VENV)/bin/sphinx-build -q -b html  $(API_DOCS_DIR)  $(API_DOCS_OUTPUT_DIR)
+	    LD_LIBRARY_PATH=$(TOP)/lib:$$LD_LIBRARY_PATH   \
+	    DYLD_LIBRARY_PATH=$(TOP)/lib:$$DYLD_LIBRARY_PATH   \
+		    $(TOP)/bin/sphinx-build -q -b html  $(API_DOCS_DIR)  $(API_DOCS_OUTPUT_DIR)
 	@echo ">>> Documentation left at $(API_DOCS_OUTPUT_DIR)"
 
 .PHONY: docs
-docs:              clean-docs all $(VENV)/bin/sphinx-build   00-docs-run
+docs:              clean-docs all $(TOP)/bin/sphinx-build   00-docs-run
 .PHONY: docs-fast
 docs-fast:         clean-docs                                00-docs-run
 
@@ -252,19 +223,19 @@ docs-fast:         clean-docs                                00-docs-run
 00-docs-pdf-run: docs-api
 	@echo ">>> Creating development docs (PDF)..."
 	@PYTHONPATH=$(SOURCES_DIR):$$PYTHONPATH \
-	    YARN_PREFIX=$(VENV) \
+	    YARN_PREFIX=$(TOP) \
 	    YARN_CONF=$(TOP)/conf/XXXX.conf \
-	    LD_LIBRARY_PATH=$(VENV)/lib:$$LD_LIBRARY_PATH   \
-	    DYLD_LIBRARY_PATH=$(VENV)/lib:$$DYLD_LIBRARY_PATH   \
-		    $(VENV)/bin/sphinx-build -q -b latex  \
+	    LD_LIBRARY_PATH=$(TOP)/lib:$$LD_LIBRARY_PATH   \
+	    DYLD_LIBRARY_PATH=$(TOP)/lib:$$DYLD_LIBRARY_PATH   \
+		    $(TOP)/bin/sphinx-build -q -b latex  \
 		        $(API_DOCS_DIR)  $(API_DOCS_OUTPUT_DIR)/latex
 	make -C  $(API_DOCS_OUTPUT_DIR)/latex   all-pdf
 	@echo ">>> PDF documentation at $(API_DOCS_OUTPUT_DIR)/latex"
-	@cp $(API_DOCS_OUTPUT_DIR)/latex/*.pdf   $(VENV)/  && echo ">>> PDFs also copied at $(VENV)"
+	@cp $(API_DOCS_OUTPUT_DIR)/latex/*.pdf   $(TOP)/  && echo ">>> PDFs also copied at $(TOP)"
 
 
 .PHONY: docs-pdf
-docs-pdf:          clean-docs all $(VENV)/bin/sphinx-build   00-docs-pdf-run
+docs-pdf:          clean-docs all $(TOP)/bin/sphinx-build   00-docs-pdf-run
 .PHONY: docs-pdf-fast
 docs-pdf-fast:     clean-docs                                00-docs-pdf-run
 
@@ -275,7 +246,7 @@ docs-pdf-fast:     clean-docs                                00-docs-pdf-run
 .PHONY: 00-test-run
 00-test-run:
 	@echo ">>> Running unit tests FAST..."
-	$(VENV)/bin/XXXX-tess
+	$(TOP)/bin/XXXX-tess
 	@echo ">>> done!"
 
 .PHONY: test
@@ -287,9 +258,9 @@ test-fast:                     00-test-run
 	@echo ">>> Creating coverage report for the node..."
 	@[ -d $(COVERAGE_DOCS_OUTPUT_DIR) ] || mkdir $(COVERAGE_DOCS_OUTPUT_DIR)
 	@rm -rf $(COVERAGE_DOCS_OUTPUT_DIR)/*
-	$(VENV)/bin/XXXX-tests --node \
+	$(TOP)/bin/XXXX-tests --node \
 	    --with-xcoverage --xcoverage-file=coverage.xml --cover-package=XXXX --cover-erase && \
-	[ $$? -eq 0 ] && $(VENV)/bin/coverage html -d $(COVERAGE_DOCS_OUTPUT_DIR)
+	[ $$? -eq 0 ] && $(TOP)/bin/coverage html -d $(COVERAGE_DOCS_OUTPUT_DIR)
 	@echo ">>> Documentation left at $(COVERAGE_DOCS_OUTPUT_DIR)"
 
 .PHONY: coverage
@@ -301,7 +272,7 @@ coverage-fast:                     00-coverage-run
 00-pylint-run:
 	@echo ">>> Creating pylint report..."
 	@PYTHONPATH=$(SOURCES_DIR):$$PYTHONPATH \
-	$(VENV)/bin/pylint --rcfile=$(VENV)/buildout/pylintrc $(SOURCES_DIR)
+	$(TOP)/bin/pylint --rcfile=$(TOP)/buildout/pylintrc $(SOURCES_DIR)
 	@echo ">>> done!"
 
 .PHONY: pylint
