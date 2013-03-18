@@ -10,10 +10,8 @@ Characteristics
 
 - automatic virtualenv management and requirements installation (type `make`)
 - separate development and production configurations. When you type `make`, we
-  will use the development build process (`buildout.devel.cfg`) and
-  settings (`reqs.cfg` and `reqs.devel.cfg`), but a `make rpm` will use the
-  build (`buildout.deploy.cfg`) and settings (just `reqs.cfg`) for
-  deployment on production machines.
+  will use the development build process (`buildout.devel.cfg`), but a `make rpm`
+  will use the build (`buildout.deploy.cfg`) for deployment on production machines.
 - project cleanup (type `make distclean`)
 - automatic Sphinx documentation (type `make docs` or `make docs-pdf` on the
   project root directory). It will discover any packages in the `sources` and add
@@ -34,7 +32,6 @@ Usage
 - search for all the occurrences of XXXX and replace them by your project name
 - search for all the XXXX* files and rename them accordingly
 - customize anything you want on the `buildout*` scripts
-- add all your requierements in the `reqs.*` files
 - add your code in the `sources` directory
 
 
@@ -44,7 +41,24 @@ FAQ
 Can I change the Python version?
 --------------------------------
 
-Set a different version on the Makefile with the `SYS_PYTHON` variable
+Set a different version on the `Makefile` with the `SYS_PYTHON` variable
+
+How do you package things in the rpm?
+-------------------------------------
+
+The rpm is built by creating a virtualenv and installing all the eggs with the
+virtualenv's easy_install. Any other artifact created by a compatible recipe
+(ie, recipes that use the `output` attribute)
+
+Can I put some other stuff in the rpm?
+---------------------------------------
+
+Yes, just set the right `output` attribute in your recipe.
+
+How can I enable the redis build?
+---------------------------------
+
+Add the `redis-build` and `redis-config` parts to the buildout.cfg/parts
 
 
 
