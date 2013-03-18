@@ -41,7 +41,7 @@ SOURCES_DIR=$(TOP)/sources
 SETUP_PY=$(SOURCES_DIR)/setup.py
 
 # the admin script
-YARN_CC=$(TOP)/bin/XXXX
+ADMIN_SCRIPT=$(TOP)/bin/XXXX
 
 # API docs dir
 API_GEN=$(TOP)/bin/sphinx-apidoc
@@ -81,8 +81,9 @@ XXXX: $(BUILDOUT) 00-common
 
 00-deploy:
 	@echo ">>> Running buildout for DEPLOYMENT..."
-	PATH=$(TOP)/bin:$$PATH  $(SYS_PYTHON) $(BUILDOUT) -N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEPLOY_CONF)
+	PATH=$(TOP)/bin:$$PATH $(BUILDOUT) -N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEPLOY_CONF)
 	@echo ">>> Build SUCCESSFUL !!"
+	@echo ">>> You can now 'make docs', 'make coverage'..."
 
 .PHONY: XXXX-deploy
 deploy:          $(BUILDOUT)   00-deploy
@@ -94,10 +95,6 @@ deploy-fast:                   00-deploy
 devel: $(BUILDOUT)
 	@echo ">>> Running buildout for DEVELOPMENT..."
 	PATH=$(TOP)/bin:$$PATH $(BUILDOUT) -N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEV_CONF)
-	@echo ">>> Checking dirs..."
-	@for i in $(RUN_DIRS) ; do mkdir -p $$i ; done
-	@rm -rf $(POST_BUILD_CLEANUPS) $(TOP)/pip-*
-	@echo
 	@echo ">>> Build SUCCESSFUL !!"
 	@echo ">>> You can now 'make docs', 'make coverage'..."
 
@@ -164,7 +161,7 @@ run-cleanup:
 
 00-rpm:
 	@echo ">>> Packaging..."
-	PATH=$(TOP)/bin:$$PATH $(BUILDOUT) -N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEPLOY_CONF) install rpm
+	PATH=$(TOP)/bin:$$PATH $(BUILDOUT) -N $(BUILDOUT_ARGS) -c $(BUILDOUT_DEPLOY_CONF) -v install rpm
 	@echo ">>> Packaging SUCCESSFUL !!"
 
 .PHONY: rpm
@@ -181,7 +178,7 @@ run: run-cleanup
 	@PYTHONPATH=$(SOURCES_DIR):$$PYTHONPATH \
 		LD_LIBRARY_PATH=$(TOP)/lib:$$LD_LIBRARY_PATH       \
 		DYLD_LIBRARY_PATH=$(TOP)/lib:$$DYLD_LIBRARY_PATH   \
-		$(YARN_CC) --config=$(TOP)/conf/XXXX.conf
+		$(ADMIN_SCRIPT) --config=$(TOP)/conf/XXXX.conf
 
 ####################################################################################################
 # documentation
@@ -207,8 +204,8 @@ docs-api:
 00-docs-run: docs-api
 	@echo ">>> Creating development docs..."
 	@PYTHONPATH=$(SOURCES_DIR):$$PYTHONPATH \
-	    YARN_PREFIX=$(TOP) \
-	    YARN_CONF=$(TOP)/conf/XXXX.conf \
+	    XXXX_PREFIX=$(TOP) \
+	    XXXX_CONF=$(TOP)/conf/XXXX.conf \
 	    LD_LIBRARY_PATH=$(TOP)/lib:$$LD_LIBRARY_PATH   \
 	    DYLD_LIBRARY_PATH=$(TOP)/lib:$$DYLD_LIBRARY_PATH   \
 		    $(TOP)/bin/sphinx-build -q -b html  $(API_DOCS_DIR)  $(API_DOCS_OUTPUT_DIR)
@@ -223,8 +220,8 @@ docs-fast:         clean-docs                                00-docs-run
 00-docs-pdf-run: docs-api
 	@echo ">>> Creating development docs (PDF)..."
 	@PYTHONPATH=$(SOURCES_DIR):$$PYTHONPATH \
-	    YARN_PREFIX=$(TOP) \
-	    YARN_CONF=$(TOP)/conf/XXXX.conf \
+	    XXXX_PREFIX=$(TOP) \
+	    XXXX_CONF=$(TOP)/conf/XXXX.conf \
 	    LD_LIBRARY_PATH=$(TOP)/lib:$$LD_LIBRARY_PATH   \
 	    DYLD_LIBRARY_PATH=$(TOP)/lib:$$DYLD_LIBRARY_PATH   \
 		    $(TOP)/bin/sphinx-build -q -b latex  \
@@ -250,7 +247,7 @@ docs-pdf-fast:     clean-docs                                00-docs-pdf-run
 	@echo ">>> done!"
 
 .PHONY: test
-test:               $(YARN_CC) 00-test-run
+test:               $(ADMIN_SCRIPT) 00-test-run
 .PHONY: test-fast
 test-fast:                     00-test-run
 
@@ -264,7 +261,7 @@ test-fast:                     00-test-run
 	@echo ">>> Documentation left at $(COVERAGE_DOCS_OUTPUT_DIR)"
 
 .PHONY: coverage
-coverage:              $(YARN_CC)  00-coverage-run
+coverage:              $(ADMIN_SCRIPT)  00-coverage-run
 .PHONY: coverage-fast
 coverage-fast:                     00-coverage-run
 
@@ -276,7 +273,7 @@ coverage-fast:                     00-coverage-run
 	@echo ">>> done!"
 
 .PHONY: pylint
-pylint:              $(YARN_CC)  00-pylint-run
+pylint:              $(ADMIN_SCRIPT)  00-pylint-run
 .PHONY: pylint-fast
 pylint-fast:                     00-pylint-run
 
