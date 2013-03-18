@@ -129,7 +129,7 @@ clean-dcache:
 
 clean: clean-pyc
 	@echo ">>> Cleaning stuff..."
-	rm -rf    $(TOP)/bin $(TOP)/doc $(TOP)/dist
+	rm -rf    $(TOP)/bin $(TOP)/doc $(TOP)/dist $(TOP)/var
 	rm -rf    $(TOP)/conf/*.conf  $(TOP)/conf/*/*.conf
 	rm -rf    $(TOP)/*.spec $(TOP)/buildout/packaging/*.spec
 	rm -rf    $(TOP)/develop-eggs $(TOP)/eggs $(TOP)/html
