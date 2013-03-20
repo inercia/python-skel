@@ -141,6 +141,8 @@ clean: clean-pyc
 	rm -rf    $(TOP)/nosetests.xml  $(TOP)/nosetests.log
 	rm -rf    $(TOP)/*.rpm $(TOP)/*.deb $(TOP)/*.tgz $(TOP)/*.pdf $(TOP)/*.dump
 	rm -rf    $(TOP)/.Python
+	rm -rf    `find . -name '*.egg-info'`
+	rm -rf    `find . -name '*.egg-lnk'`
 	rm -rf    $(RPM_TAR)
 	@echo ">>> Everything bright and clean!!"
 	@echo ">>> You can now 'make'..."
