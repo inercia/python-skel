@@ -58,3 +58,20 @@ RELEASE
 /temp/
 
 
+.idea/
+
+## nginx stuff
+conf/fastcgi.conf.default
+conf/fastcgi_params
+conf/fastcgi_params.default
+conf/koi-utf
+conf/koi-win
+conf/mime.types
+conf/mime.types.default
+conf/nginx.conf.default
+conf/nginx.conf.in
+conf/scgi_params
+conf/scgi_params.default
+conf/uwsgi_params
+conf/uwsgi_params.default
+conf/win-utf
